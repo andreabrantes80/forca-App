@@ -1,0 +1,96 @@
+import getWord from "./words.js";
+
+const contentBtns = document.querySelector(".btns");
+const contentGuessWords = document.querySelector(".guess-words");
+const img = document.querySelector("img");
+const contentClue = document.querySelector(".clue");
+const btnNew = document.querySelector(".new");
+
+btnNew.onclick = () => init();
+
+let indexImg;
+
+init();
+
+function init() {
+  indexImg = 1;
+  img.src = `img1.png`;
+
+  generateGuessSection();
+  generateButtons();
+}
+
+function generateGuessSection() {
+  contentGuessWords.textContent = "";
+
+  const { word, clue } = getWord();
+  const wordWdthoutAccent = word
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  Array.from(wordWdthoutAccent).forEach((letter) => {
+    const span = document.createElement("span");
+
+    span.textContent = "_";
+    span.setAttribute("word", letter.toUpperCase());
+    contentGuessWords.appendChild(span);
+  });
+
+  contentClue.textContent = `Dica: ${clue}`;
+}
+
+function verifyLetter(letter){
+  const arr = document.querySelectorAll(`[word="${letter}"]`);
+
+  if (!arr.length) wrongAnswer();
+
+  arr.forEach((e) => {
+    e.textContent = letter;
+  });
+
+  const spans = document.querySelectorAll(`.guess-words span`);
+
+  const won = !Array.from(spans).find((span) => span.textContent === "_");
+
+  if (won) {
+    setTimeout(() => {
+      alert("Ganhou!!!");
+      init();
+    }, 100);
+  }
+
+}
+
+  function wrongAnswer() {
+  indexImg++;
+    img.src = `img${indexImg}.png`;
+
+    if (indexImg === 7) {
+      setTimeout(() => {
+        alert("Perdeu :/");
+        init();
+      }, 100);
+    }
+  }
+
+
+
+
+// Usando a tabela ASC para criar as letras
+function generateButtons() {
+  contentBtns.textContent = "";
+
+  for (let i = 97; i < 123; i++) {
+    const btn = document.createElement("button");
+    const letter = String.fromCharCode(i).toUpperCase();
+    btn.textContent = letter;
+
+    btn.onclick = () => {
+      btn.disabled = true;
+      btn.style.backgroundColor = "gray";
+      verifyLetter(letter);
+    };
+
+    contentBtns.appendChild(btn);
+  }
+}
