@@ -7,20 +7,29 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header>
+    <header class="header-top" >
       <h1>Jogo da Forca</h1>
     </header>
     <button class="new">Novo Jogo</button>
+    <label for="wordType">Selecione o tipo de palavras:</label>
+    <select id="wordType" class="select-green">
+      <option value="biblical">Bíblicas</option>
+      <option value="animals">Animais</option>
+      <option value="fruits">Frutas</option>
+      <option value="diversas">Diversas</option>
+    </select>
     <main>
       <article class="content-img">
         <img src="img1.png" width="250px" alt="Jogo da Forca" />
       </article>
 
+      <div class="score">Pontuação: <span id="score">0</span></div>
       <article class="content">
         <div class="guess-words"></div>
         <div class="clue"></div>
         <div class="btns"></div>
       </article>
+      <div id="fireworks-container"></div>
     </main>
 
     <script src="script.js" type="module"></script>
