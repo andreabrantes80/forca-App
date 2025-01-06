@@ -82,7 +82,7 @@ function wrongAnswer() {
   img.src = `img${indexImg}.png`;
 
   if (indexImg === 7) {
-    score = 0;
+    currentScore = 0;
     updateScore();
     setTimeout(() => {
       alert("Perdeu :/");
