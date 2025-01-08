@@ -17,7 +17,9 @@ let previousScore = localStorage.getItem("score")
   ? parseInt(localStorage.getItem("score"))
   : 0;
 document.addEventListener("DOMContentLoaded", () => {
-  alert(`Bem-vindo de volta! Sua última pontuação foi: ${previousScore}`);
+  if (navigator.userAgent.toLowerCase().includes("android")) {
+    alert(`Bem-vindo de volta! Sua última pontuação foi: ${previousScore}`);
+  }
 });
 
 const colors = ["red", "green", "blue", "yellow", "orange", "purple", "pink"];
