@@ -8,6 +8,7 @@ const btnNew = document.querySelector(".new");
 const wordTypeSelect = document.getElementById("wordType");
 const scoreElement = document.getElementById("score");
 const fireworksContainer = document.getElementById("fireworks-container");
+const accessCountElement = document.getElementById("access-count");
 
 btnNew.onclick = () => init();
 
@@ -16,7 +17,15 @@ let currentScore = 0;
 let previousScore = localStorage.getItem("score")
   ? parseInt(localStorage.getItem("score"))
   : 0;
+
+  let accessCount = localStorage.getItem("accessCount")
+    ? parseInt(localStorage.getItem("accessCount"))
+    : 0;
 document.addEventListener("DOMContentLoaded", () => {
+  accessCount++;
+  localStorage.setItem("accessCount", accessCount);
+  accessCountElement.textContent = `Acessos: ${accessCount}`;
+  alert(`Bem-vindo de volta! Sua última pontuação foi: ${previousScore}`);
   if (navigator.userAgent.toLowerCase().includes("android")) {
     alert(`Bem-vindo de volta! Sua última pontuação foi: ${previousScore}`);
   }
