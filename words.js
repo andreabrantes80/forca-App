@@ -69,7 +69,7 @@ const words = {
       word: "Nabucodonosor",
       clue: "Rei da Babilônia, conhecido por sua relação com Daniel",
     },
-    { word: "João Batista", clue: "Pregador que batizou Jesus no rio Jordão" },
+    { word: "JoãoBatista", clue: "Pregador que batizou Jesus no rio Jordão" },
     { word: "Maria", clue: "Mãe de Jesus, virgem escolhida por Deus" },
     { word: "José", clue: "Pai terreno de Jesus, carpinteiro" },
     { word: "Pedro", clue: "Discípulo de Jesus, também conhecido como Simão" },
@@ -80,7 +80,7 @@ const words = {
     },
     { word: "Lázaro", clue: "Amigo de Jesus, ressuscitado dos mortos" },
     {
-      word: "Maria Madalena",
+      word: "MariaMadalena",
       clue: "Seguidora de Jesus, presente na sua crucificação e ressurreição",
     },
     {
