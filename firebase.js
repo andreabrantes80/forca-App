@@ -3,6 +3,7 @@ import {
   enableIndexedDbPersistence,
   getFirestore,
 } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
 // Sua configuração do Firebase
 const firebaseConfig = {
@@ -17,6 +18,7 @@ const firebaseConfig = {
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === "failed-precondition") {
@@ -31,4 +33,4 @@ enableIndexedDbPersistence(db).catch((err) => {
 });
 
 // Exporta o objeto db para ser utilizado em outros arquivos
-export { db };
+export { db, auth };

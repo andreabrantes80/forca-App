@@ -1,4 +1,4 @@
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 import getWord from "./words.js";
 import {
   doc,
@@ -7,6 +7,10 @@ import {
   increment,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+import {
+  signInAnonymously,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
 const contentBtns = document.querySelector(".btns");
 const contentGuessWords = document.querySelector(".guess-words");
@@ -23,23 +27,42 @@ btnNew.onclick = () => restart();
 wordTypeSelect.onchange = () => changeWordType();
 
 let indexImg;
-let accessCount;
-let lastscoreCount;
-let score;
+let accessCount = 0;
+let lastscoreCount = 0;
+let score = 0;
+let userId;
+
+//Inicialize a autenticação anônima
+signInAnonymously(auth).catch((error) => {
+  console.error("Erro ao autenticar anonimamente:", error);
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userId = user.uid;
+    console.log(`Usuário autenticado com ID: ${userId}`);
+    init();
+  } else {
+    console.error("Falha na autenticação do usuário.");
+  }
+});
 
 init();
 document.addEventListener("DOMContentLoaded", async () => {
-  await initializeData();
-  updateAccessCount();
-  displayPreviousScore();
-  updateLastScore();
+  if (userId) {
+    await initializeData();
+    updateAccessCount();
+    displayPreviousScore();
+    updateLastScore();
+  }
 });
 
 async function initializeData() {
   try {
-    const accessDoc = doc(db, "gameData", "accessCount");
-    const scoreDoc = doc(db, "gameData", "score");
-    const lastScoreDoc = doc(db, "gameData", "lastscore");
+    const userDocRef = doc(db, "gameData", userId);
+    const accessDoc = doc(userDocRef, "data", "accessCount");
+    const scoreDoc = doc(userDocRef, "data", "score");
+    const lastScoreDoc = doc(userDocRef, "data", "lastscore");
 
     const acessSnapshot = await getDoc(accessDoc);
     const scoreSnapshot = await getDoc(scoreDoc);
@@ -78,7 +101,12 @@ async function initializeData() {
 async function updateAccessCount() {
   try {
     accessCount++;
-    const accessDoc = doc(db, "gameData", "accessCount");
+   const userDocRef = doc(db, "gameData", userId);
+    const accessDoc = doc(userDocRef, "data", "accessCount");
+    const accessSnapshot = await getDoc(accessDoc);
+    if (!accessSnapshot.exists()) {
+      await setDoc(accessDoc, { count: accessCount });
+    }
     await updateDoc(accessDoc, { count: increment(1) });
     console.log(`Access count atualizado para: ${accessCount}`);
     accessCountElement.textContent = `Acessos: ${accessCount}`;
@@ -112,10 +140,16 @@ async function updateAccessCount() {
 async function updateLastScore() {
   try {
     document.getElementById("loading-spinner").style.display = "block";
-    const lastScoreDoc = doc(db, "gameData", "lastscore");
+    const userDocRef = doc(db, "gameData", userId);
+    const lastScoreDoc = doc(userDocRef, "data", "lastscore");
 
     console.log(`Score atual: ${score}`);
     console.log(`Última pontuação registrada: ${lastscoreCount}`);
+
+    const lastScoreSnapshot = await getDoc(lastScoreDoc);
+    if (!lastScoreSnapshot.exists()) {
+      await setDoc(lastScoreDoc, { count: lastscoreCount });
+    }
 
     if (score > lastscoreCount) {
       lastscoreCount = score;
@@ -133,7 +167,13 @@ async function updateLastScore() {
 }
 async function updateScoreinFirebase() {
   try {
-    const scoreDoc = doc(db, "gameData", "score");
+    const userDocRef = doc(db, "gameData", userId);
+    const scoreDoc = doc(userDocRef, "data", "score");
+
+    const scoreSnapshot = await getDoc(scoreDoc);
+    if (!scoreSnapshot.exists()) {
+      await setDoc(scoreDoc, { count: score });
+    }
     await updateDoc(scoreDoc, { count: score });
     console.log(`Pontuação atualizada no Firestore: ${score}`);
     scoreElement.textContent = score;
@@ -145,7 +185,8 @@ async function updateScoreinFirebase() {
 
 async function resetScoreInFirebase() {
   try {
-    const scoreDoc = doc(db, "gameData", "score");
+    const userDocRef = doc(db, "gameData", userId);
+    const scoreDoc = doc(userDocRef, "data", "score");
     await setDoc(scoreDoc, { count: 0 });
     score = 0;
     scoreElement.textContent = 0;
