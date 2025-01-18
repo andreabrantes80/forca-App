@@ -37,11 +37,14 @@ signInAnonymously(auth).catch((error) => {
   console.error("Erro ao autenticar anonimamente:", error);
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     userId = user.uid;
     console.log(`Usuário autenticado com ID: ${userId}`);
-    init();
+    await initializeData();
+    await updateAccessCount();
+    updateLastScore();
+    displayPreviousScore();
   } else {
     console.error("Falha na autenticação do usuário.");
   }
@@ -51,7 +54,7 @@ init();
 document.addEventListener("DOMContentLoaded", async () => {
   if (userId) {
     await initializeData();
-    updateAccessCount();
+    await updateAccessCount();
     displayPreviousScore();
     updateLastScore();
   }
@@ -71,11 +74,13 @@ async function initializeData() {
     if (acessSnapshot.exists()) {
       accessCount = acessSnapshot.data().count;
       console.log(`Access count: ${accessCount}`);
+      accessCountElement.textContent = `Acessos: ${accessCount}`;
     } else {
       console.error("Documento 'accessCount' não encontrado!");
       accessCount = 0;
       await setDoc(accessDoc, { count: accessCount });
       console.log("Documento 'accessCount' criado");
+      accessCountElement.textContent = `Acessos: ${accessCount}`;
     }
 
     if (scoreSnapshot.exists()) {
@@ -100,14 +105,10 @@ async function initializeData() {
 
 async function updateAccessCount() {
   try {
-    accessCount++;
-   const userDocRef = doc(db, "gameData", userId);
+    const userDocRef = doc(db, "gameData", userId);
     const accessDoc = doc(userDocRef, "data", "accessCount");
-    const accessSnapshot = await getDoc(accessDoc);
-    if (!accessSnapshot.exists()) {
-      await setDoc(accessDoc, { count: accessCount });
-    }
     await updateDoc(accessDoc, { count: increment(1) });
+    accessCount++;
     console.log(`Access count atualizado para: ${accessCount}`);
     accessCountElement.textContent = `Acessos: ${accessCount}`;
   } catch (error) {
@@ -115,38 +116,16 @@ async function updateAccessCount() {
   }
 }
 
-// async function updateLastScore() {
-//   try {
-//     const lastScoreDoc = doc(db, "gameData", "lastscore");
-//     const lastScoreSnapshot = await getDoc(lastScoreDoc);
-//     if (lastScoreSnapshot.exists()) {
-//       const lastScore = lastScoreSnapshot.data().count;
-//       if (score > lastScore) {
-//         await updateDoc(lastScoreDoc, { count: score });
-//         console.log(`Última pontuação atualizada para: ${score}`);
-//         accessLastScoreElement.textContent = `Última Pontuação: ${lastscoreCount}`;
-//       } else {
-//         console.log("A nova pontuação não é maior que a pontuação anterior.");
-//         // accessLastScoreElement.textContent = `Última Pontuação: ${lastscoreCount}`;
-//       }
-//     } else {
-//       console.error("Documento 'lastscore' não encontrado!");
-//     }
-//   } catch (error) {
-//     console.error("Erro ao atualizar a última pontuação:", error);
-//   }
-// }
-
 async function updateLastScore() {
   try {
     document.getElementById("loading-spinner").style.display = "block";
     const userDocRef = doc(db, "gameData", userId);
     const lastScoreDoc = doc(userDocRef, "data", "lastscore");
+    const lastScoreSnapshot = await getDoc(lastScoreDoc);
 
     console.log(`Score atual: ${score}`);
     console.log(`Última pontuação registrada: ${lastscoreCount}`);
 
-    const lastScoreSnapshot = await getDoc(lastScoreDoc);
     if (!lastScoreSnapshot.exists()) {
       await setDoc(lastScoreDoc, { count: lastscoreCount });
     }
@@ -165,19 +144,15 @@ async function updateLastScore() {
     document.getElementById("loading-spinner").style.display = "none";
   }
 }
-async function updateScoreinFirebase() {
+
+async function updateScoreInFirebase() {
   try {
     const userDocRef = doc(db, "gameData", userId);
     const scoreDoc = doc(userDocRef, "data", "score");
-
-    const scoreSnapshot = await getDoc(scoreDoc);
-    if (!scoreSnapshot.exists()) {
-      await setDoc(scoreDoc, { count: score });
-    }
     await updateDoc(scoreDoc, { count: score });
     console.log(`Pontuação atualizada no Firestore: ${score}`);
     scoreElement.textContent = score;
-    updateLastScore();
+    await updateLastScore();
   } catch (error) {
     console.error("Erro ao atualizar a pontuação no Firestore:", error);
   }
@@ -209,7 +184,7 @@ function displayPreviousScore() {
 }
 function updateScore() {
   scoreElement.textContent = score;
-  updateScoreinFirebase(score);
+  updateScoreInFirebase();
   if (score % 10 === 0 && score > 0) {
     showFireworks();
   }
